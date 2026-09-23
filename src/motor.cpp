@@ -1,7 +1,7 @@
 #include "motor.h"
 
-Motor::Motor(int pinIN1, int pinIN2, int pinEN)
-  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN) {}
+Motor::Motor(int pinIN1, int pinIN2, int pinEN, bool revers)
+  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN), _revers(revers) {}
 
 void Motor::begin() {
   pinMode(_pinIN1, OUTPUT);
@@ -10,7 +10,8 @@ void Motor::begin() {
 }
 
 void Motor::setSpeed(int mSpeed, int dir) {
-  if (dir > 0) {
+  int _dir = dir * (_revers) ? -1 : 1;
+  if (_dir > 0) {
     digitalWrite(_pinIN2, HIGH);
     digitalWrite(_pinIN1, LOW);
     analogWrite(_pinEN, mSpeed);

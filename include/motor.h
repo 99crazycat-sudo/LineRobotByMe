@@ -5,7 +5,7 @@
 
 class Motor {
   public:
-    Motor(int pinIN1, int pinIN2, int pinEN);
+    Motor(int pinIN1, int pinIN2, int pinEN, bool reverse);
 
     void begin();
     void setSpeed(int mSpeed, int dir);
@@ -15,6 +15,7 @@ class Motor {
     int _pinIN1;
     int _pinIN2;
     int _pinEN;
+    bool _revers;
 };
 
 #endif

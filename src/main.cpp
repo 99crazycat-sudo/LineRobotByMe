@@ -19,8 +19,8 @@
 //#define PIN_ENC_R_A     3          // фаза A, прерывание
 //#define PIN_ENC_R_B    11          // фаза B, направление
 
-Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L);
-Motor motorR(PIN_IN2_R, PIN_IN1_R, PIN_EN_R);
+Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L, false);
+Motor motorR(PIN_IN2_R, PIN_IN1_R, PIN_EN_R, true);
 
 int RSensData;
 int LSensData;
