@@ -8,14 +8,14 @@ class Motor {
     Motor(int pinIN1, int pinIN2, int pinEN, bool reverse);
 
     void begin();
-    void setSpeed(int mSpeed, int dir);
+    void setSpeed(int speed);
     void stop();
 
   private:
-    int _pinIN1;
-    int _pinIN2;
-    int _pinEN;
-    bool _revers;
+    int  _pinIN1;
+    int  _pinIN2;
+    int  _pinEN;
+    bool _reverse;
 };
 
 #endif

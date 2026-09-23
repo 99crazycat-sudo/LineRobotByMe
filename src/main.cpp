@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "motor.h"
+#include "sensor.h"
 
 // --- Датчики линии ---
 #define PIN_R_SENSOR   A3
@@ -20,13 +21,12 @@
 //#define PIN_ENC_R_B    11          // фаза B, направление
 
 Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L, false);
-Motor motorR(PIN_IN2_R, PIN_IN1_R, PIN_EN_R, true);
+Motor motorR(PIN_IN1_R, PIN_IN2_R, PIN_EN_R, true);
 
-int RSensData;
-int LSensData;
-int GoalSpeed = 50;
-int DirL = 1;
-int DirR = 1;
+LineSensor sensorL(PIN_L_SENSOR, 40, 440, 0, 100);
+LineSensor sensorR(PIN_R_SENSOR, 50, 350, 0, 100);
+
+int GoalSpeed = 100;
 const int Cross_Trig = 70;
 const float Kp = 1.0f;
 
@@ -38,47 +38,21 @@ enum State : int {
 State status = LINE;
 
 void ReadSensors(void);
-bool Line(void);
+void Line(void);
 bool Cross(void);
 void StopMotors(void);
 void SetSpeedL(int mSpeed, int dirL);
 void SetSpeedR(int mSpeed, int dirR);
 
-void SetSpeedL(int mSpeed, int dirL){
-  if (dirL > 0){
-    digitalWrite(PIN_IN2_L, HIGH);
-    digitalWrite(PIN_IN1_L, LOW);
-    analogWrite(PIN_EN_L, mSpeed);
-  } else{
-    digitalWrite(PIN_IN2_L, LOW);
-    digitalWrite(PIN_IN1_L, HIGH);
-    analogWrite(PIN_EN_L, mSpeed);
-  }
-}
-
-void SetSpeedR(int mSpeed, int dirR){
-  if (dirR > 0){
-    digitalWrite(PIN_IN2_R, LOW);
-    digitalWrite(PIN_IN1_R, HIGH);
-    analogWrite(PIN_EN_R, mSpeed);
-  } else{
-    digitalWrite(PIN_IN2_R, HIGH);
-    digitalWrite(PIN_IN1_R, LOW);
-    analogWrite(PIN_EN_R, mSpeed);
-  }
-}
-
 void setup() {
   Serial.begin(115200);
-  pinMode(PIN_R_SENSOR, INPUT);
-  pinMode(PIN_L_SENSOR, INPUT);
+  sensorR.begin();
+  sensorL.begin();
   motorL.begin();
   motorR.begin();
 }
 
 void loop() {
-  ReadSensors();
-
   switch (status) {
     case LINE:
       if (Cross()) {
@@ -94,35 +68,20 @@ void loop() {
   }
 }
 
-void ReadSensors(void) {
-  RSensData = map(analogRead(PIN_R_SENSOR), 50, 350, 0, 100);
-  LSensData = map(analogRead(PIN_L_SENSOR), 40, 440, 0, 100);
-}
-
-bool Line(void){
-  int err = (LSensData - RSensData);
+void Line(void) {
+  int err = (sensorL.read() - sensorR.read());
   int SpeedL = (GoalSpeed - err) * Kp;
   int SpeedR = (GoalSpeed + err) * Kp;
-  SpeedL = (SpeedL > 255)? 255 : SpeedL;
-  SpeedR = (SpeedR > 255)? 255 : SpeedR;
-  if (SpeedL < 0){
-    motorL.setSpeed(abs(SpeedL), 0);
-  } else{
-    motorL.setSpeed(abs(SpeedL), 1);
-  }
-  if (SpeedR < 0){
-    motorR.setSpeed(abs(SpeedR), 0);
-  } else{
-    motorR.setSpeed(abs(SpeedR), 1);
-  }
-  return true;
+
+  motorL.setSpeed(SpeedL);
+  motorR.setSpeed(SpeedR);
 }
 
 bool Cross(void) {
-  return (RSensData > Cross_Trig) && (LSensData > Cross_Trig);
+  return (sensorL.read() > Cross_Trig) && (sensorR.read() > Cross_Trig);
 }
 
 void StopMotors(void) {
-  motorL.setSpeed(0, 1);
-  motorR.setSpeed(0, 1);
+  motorL.stop();
+  motorR.stop();
 }
