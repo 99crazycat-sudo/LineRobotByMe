@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "motor.h"
 
 // --- Датчики линии ---
 #define PIN_R_SENSOR   A3
@@ -18,16 +19,19 @@
 //#define PIN_ENC_R_A     3          // фаза A, прерывание
 //#define PIN_ENC_R_B    11          // фаза B, направление
 
+Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L);
+Motor motorR(PIN_IN2_R, PIN_IN1_R, PIN_EN_R);
+
 int RSensData;
 int LSensData;
-int GoalSpeed = 60;
+int GoalSpeed = 50;
 int DirL = 1;
 int DirR = 1;
 const int Cross_Trig = 70;
 const float Kp = 1.0f;
 
-enum State{
-  LINE,
+enum State : int {
+  LINE = 0,
   CROSS
 };
 
@@ -68,12 +72,8 @@ void setup() {
   Serial.begin(115200);
   pinMode(PIN_R_SENSOR, INPUT);
   pinMode(PIN_L_SENSOR, INPUT);
-  pinMode(PIN_IN1_L, OUTPUT);
-  pinMode(PIN_IN2_L, OUTPUT);
-  pinMode(PIN_EN_L,  OUTPUT);
-  pinMode(PIN_IN1_R, OUTPUT);
-  pinMode(PIN_IN2_R, OUTPUT);
-  pinMode(PIN_EN_R,  OUTPUT);
+  motorL.begin();
+  motorR.begin();
 }
 
 void loop() {
@@ -106,14 +106,14 @@ bool Line(void){
   SpeedL = (SpeedL > 255)? 255 : SpeedL;
   SpeedR = (SpeedR > 255)? 255 : SpeedR;
   if (SpeedL < 0){
-    SetSpeedL(abs(SpeedL), 0);
+    motorL.setSpeed(abs(SpeedL), 0);
   } else{
-    SetSpeedL(abs(SpeedL), 1);
+    motorL.setSpeed(abs(SpeedL), 1);
   }
   if (SpeedR < 0){
-    SetSpeedR(abs(SpeedR), 0);
+    motorR.setSpeed(abs(SpeedR), 0);
   } else{
-    SetSpeedR(abs(SpeedR), 1);
+    motorR.setSpeed(abs(SpeedR), 1);
   }
   return true;
 }
@@ -123,6 +123,6 @@ bool Cross(void) {
 }
 
 void StopMotors(void) {
-  SetSpeedL(0, 1);
-  SetSpeedR(0, 1);
+  motorL.setSpeed(0, 1);
+  motorR.setSpeed(0, 1);
 }
