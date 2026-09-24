@@ -85,3 +85,15 @@ void StopMotors(void) {
   motorL.stop();
   motorR.stop();
 }
+
+
+// bool prev_in;
+// prev_in = 0;
+// bool out;
+// bool R_Ttrig(bool in) {
+//   if (!prev_in && in ) {
+//     out = true;
+//   }
+//   prev_in = in;
+//   return out;
+// };
