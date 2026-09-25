@@ -1,7 +1,8 @@
 #include "motor.h"
 
 Motor::Motor(int pinIN1, int pinIN2, int pinEN, bool reverse)
-  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN), _reverse(reverse) {}
+  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN), _reverse(reverse),
+    _stopStart(0), _stopDur(0), _stopActive(false) {}
 
 void Motor::begin() {
   pinMode(_pinIN1, OUTPUT);
@@ -32,4 +33,21 @@ void Motor::setSpeed(int speed) {
 
 void Motor::stop() {
   setSpeed(0);
+}
+
+bool Motor::stopFor(unsigned long ms) {
+  if (!_stopActive) {
+    stop();
+    _stopStart  = millis();
+    _stopDur    = ms;
+    _stopActive = true;
+    return true;
+  }
+
+  if (millis() - _stopStart >= _stopDur) {
+    _stopActive = false;
+    return false;
+  }
+
+  return true;
 }

@@ -11,11 +11,19 @@ class Motor {
     void setSpeed(int speed);
     void stop();
 
+    // Неблокирующая остановка на заданное количество мс
+    // Возвращает true пока мотор ещё стоит false - когда можно ехать
+    bool stopFor(unsigned long ms);
+
   private:
     int  _pinIN1;
     int  _pinIN2;
     int  _pinEN;
     bool _reverse;
+
+    unsigned long _stopStart;
+    unsigned long _stopDur;
+    bool _stopActive;
 };
 
 #endif

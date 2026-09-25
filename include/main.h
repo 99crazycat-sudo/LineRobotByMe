@@ -19,11 +19,6 @@
 //#define PIN_ENC_R_A     3          // фаза A, прерывание
 //#define PIN_ENC_R_B    11          // фаза B, направление
 
-const int Cross_Trig = 80;
-const float Kp = 1.0f;
-
-uint8_t STEP_PRG = 0;
-
 enum State_t : uint8_t {
   LINE = 0,
   //CROSS
@@ -33,12 +28,14 @@ enum StateLine_t : uint8_t {
   ON_LINE = 0,
   LEFT_G_CROSS,
   RIGHT_G_CROSS,
-  CROSS
+  CROSS,
+  LOST_LINE       // ← оба датчика вне линии
 };
 
 void ReadSensors(void);
 StateLine_t Line(int speed);
 bool Cross(void);
+bool StopMotors(unsigned long ms);
 void StopMotors(void);
 
 #endif
