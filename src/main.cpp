@@ -2,12 +2,14 @@
 #include "motor.h"
 #include "sensor.h"
 #include "main.h"
+#include "Ultrasonic.h"
 
 Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L, false);
 Motor motorR(PIN_IN1_R, PIN_IN2_R, PIN_EN_R, true);
 
 LineSensor sensorL(PIN_L_SENSOR, 40, 440, 0, 100);
 LineSensor sensorR(PIN_R_SENSOR, 50, 350, 0, 100);
+Ultrasonic ultrasonic1(13, 12);
 
 StateLine_t stateLine = ON_LINE;
 State_t status = LINE;
@@ -30,7 +32,18 @@ void loop() {
   case 0: {
     StateLine_t s = Line(70);
     if (s == LEFT_G_CROSS || s == RIGHT_G_CROSS) {
-      STEP_PRG = 1;
+      int SnData = ultrasonic1.read();
+      if (SnData > 10){
+        motorL.setSpeed(80);
+        delay(1000);
+        motorL.stop();
+        motorL.setSpeed(80);
+        motorR.setSpeed(80);
+        delay(1000);
+        StopMotors();
+        STEP_PRG = 1;
+      }
+      //STEP_PRG = 1;
     }
     break;
   }
@@ -39,6 +52,9 @@ void loop() {
     STEP_PRG = 2;
     break;
   }
+  // Serial.print(ultrasonic1.read());
+  // Serial.println("cm");
+  // delay(500);
 }
 
 StateLine_t Line(int speed) {

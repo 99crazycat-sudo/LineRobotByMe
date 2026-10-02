@@ -37,5 +37,7 @@ StateLine_t Line(int speed);
 bool Cross(void);
 bool StopMotors(unsigned long ms);
 void StopMotors(void);
+bool StopMotorsFor(unsigned long ms);
+bool DriveMotorsFor(int speedL, int speedR, unsigned long ms);
 
 #endif

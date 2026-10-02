@@ -2,7 +2,8 @@
 
 Motor::Motor(int pinIN1, int pinIN2, int pinEN, bool reverse)
   : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN), _reverse(reverse),
-    _stopStart(0), _stopDur(0), _stopActive(false) {}
+    _stopStart(0),  _stopDur(0),  _stopActive(false),
+    _driveStart(0), _driveDur(0), _driveActive(false) {}
 
 void Motor::begin() {
   pinMode(_pinIN1, OUTPUT);
@@ -46,6 +47,23 @@ bool Motor::stopFor(unsigned long ms) {
 
   if (millis() - _stopStart >= _stopDur) {
     _stopActive = false;
+    return false;
+  }
+
+  return true;
+}
+
+bool Motor::driveFor(int speed, unsigned long ms) {
+  if (!_driveActive) {
+    setSpeed(speed);
+    _driveStart  = millis();
+    _driveDur    = ms;
+    _driveActive = true;
+    return true;
+  }
+
+  if (millis() - _driveStart >= _driveDur) {
+    _driveActive = false;
     return false;
   }
 
