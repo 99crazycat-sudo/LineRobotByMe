@@ -2,32 +2,34 @@
 #define MOTOR_H
 
 #include <Arduino.h>
+#include "encoder.h"
 
 class Motor {
   public:
-    Motor(int pinIN1, int pinIN2, int pinEN, bool reverse);
+    Motor(int pinIN1, int pinIN2, int pinEN,
+          bool reverse, bool invertEnc,
+          Encoder& encoder);
 
     void begin();
     void setSpeed(int speed);
     void stop();
 
-    bool stopFor(unsigned long ms);
+    long getEncoderNorm();
 
-    bool driveFor(int speed, unsigned long ms);
+    void startMove(float mm, int speed);
+    bool isDone();
 
   private:
     int  _pinIN1;
     int  _pinIN2;
     int  _pinEN;
     bool _reverse;
+    bool _invertEnc;
 
-    unsigned long _stopStart;
-    unsigned long _stopDur;
-    bool          _stopActive;
+    Encoder& _encoder;
 
-    unsigned long _driveStart;
-    unsigned long _driveDur;
-    bool          _driveActive;
+    bool _posMode;
+    long _targetCount;
 };
 
 #endif

@@ -1,43 +1,30 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-// --- Датчики линии ---
 #define PIN_R_SENSOR   A3
 #define PIN_L_SENSOR   A2
 
-// --- Левый мотор ---
 #define PIN_IN1_L       8
 #define PIN_IN2_L       7
 #define PIN_EN_L        6
-//#define PIN_ENC_L_A     2          // фаза A, прерывание
-//#define PIN_ENC_L_B     4          // фаза B, направление
+#define PIN_ENC_L_A     2
+#define PIN_ENC_L_B     4
 
-// --- Правый мотор ---
 #define PIN_IN1_R      10
 #define PIN_IN2_R       9
 #define PIN_EN_R        5
-//#define PIN_ENC_R_A     3          // фаза A, прерывание
-//#define PIN_ENC_R_B    11          // фаза B, направление
-
-enum State_t : uint8_t {
-  LINE = 0,
-  //CROSS
-};
+#define PIN_ENC_R_A     3
+#define PIN_ENC_R_B    11
 
 enum StateLine_t : uint8_t {
   ON_LINE = 0,
   LEFT_G_CROSS,
   RIGHT_G_CROSS,
   CROSS,
-  LOST_LINE       // ← оба датчика вне линии
+  LOST_LINE
 };
 
-void ReadSensors(void);
 StateLine_t Line(int speed);
-bool Cross(void);
-bool StopMotors(unsigned long ms);
 void StopMotors(void);
-bool StopMotorsFor(unsigned long ms);
-bool DriveMotorsFor(int speedL, int speedR, unsigned long ms);
 
 #endif

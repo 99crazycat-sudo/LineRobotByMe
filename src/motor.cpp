@@ -1,9 +1,13 @@
 #include "motor.h"
+#include "config.h"
 
-Motor::Motor(int pinIN1, int pinIN2, int pinEN, bool reverse)
-  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN), _reverse(reverse),
-    _stopStart(0),  _stopDur(0),  _stopActive(false),
-    _driveStart(0), _driveDur(0), _driveActive(false) {}
+Motor::Motor(int pinIN1, int pinIN2, int pinEN,
+             bool reverse, bool invertEnc,
+             Encoder& encoder)
+  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN),
+    _reverse(reverse), _invertEnc(invertEnc),
+    _encoder(encoder),
+    _posMode(false), _targetCount(0) {}
 
 void Motor::begin() {
   pinMode(_pinIN1, OUTPUT);
@@ -34,38 +38,32 @@ void Motor::setSpeed(int speed) {
 
 void Motor::stop() {
   setSpeed(0);
+  _posMode = false;
 }
 
-bool Motor::stopFor(unsigned long ms) {
-  if (!_stopActive) {
+long Motor::getEncoderNorm() {
+  long c = _encoder.getCount();
+  if (_invertEnc) c = -c;
+  return c;
+}
+
+void Motor::startMove(float mm, int speed) {
+  long start   = getEncoderNorm();
+  _targetCount = start + (long)(mm / MM_PER_IMP);
+  _posMode     = true;
+
+  setSpeed(speed);
+}
+
+bool Motor::isDone() {
+  if (!_posMode) return true;
+
+  long remaining = _targetCount - getEncoderNorm();
+
+  if (abs(remaining) < STOP_THRESHOLD_IMP) {
     stop();
-    _stopStart  = millis();
-    _stopDur    = ms;
-    _stopActive = true;
     return true;
   }
 
-  if (millis() - _stopStart >= _stopDur) {
-    _stopActive = false;
-    return false;
-  }
-
-  return true;
-}
-
-bool Motor::driveFor(int speed, unsigned long ms) {
-  if (!_driveActive) {
-    setSpeed(speed);
-    _driveStart  = millis();
-    _driveDur    = ms;
-    _driveActive = true;
-    return true;
-  }
-
-  if (millis() - _driveStart >= _driveDur) {
-    _driveActive = false;
-    return false;
-  }
-
-  return true;
+  return false;
 }

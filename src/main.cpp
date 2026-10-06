@@ -1,60 +1,55 @@
 #include <Arduino.h>
 #include "motor.h"
 #include "sensor.h"
+#include "encoder.h"
+#include "config.h"
 #include "main.h"
-#include "Ultrasonic.h"
 
-Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L, false);
-Motor motorR(PIN_IN1_R, PIN_IN2_R, PIN_EN_R, true);
+Encoder encoderL(PIN_ENC_L_A, PIN_ENC_L_B);
+Encoder encoderR(PIN_ENC_R_A, PIN_ENC_R_B);
+
+Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L, false, true,  encoderL);
+Motor motorR(PIN_IN1_R, PIN_IN2_R, PIN_EN_R, true,  false, encoderR);
 
 LineSensor sensorL(PIN_L_SENSOR, 40, 440, 0, 100);
 LineSensor sensorR(PIN_R_SENSOR, 50, 350, 0, 100);
-Ultrasonic ultrasonic1(13, 12);
 
-StateLine_t stateLine = ON_LINE;
-State_t status = LINE;
+const int   Cross_Trig = 70;
+const float Kp         = 1.0f;
 
-const int Cross_Trig = 70;
-const float Kp = 1.0f;
-uint8_t STEP_PRG;
+void isrEncoderL() { encoderL.handleInterrupt(); }
+void isrEncoderR() { encoderR.handleInterrupt(); }
 
 void setup() {
   Serial.begin(115200);
+
   sensorR.begin();
   sensorL.begin();
+
+  encoderL.begin();
+  encoderR.begin();
+
   motorL.begin();
   motorR.begin();
-  STEP_PRG = 0;
+
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_L_A), isrEncoderL, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_R_A), isrEncoderR, RISING);
+
+  Serial.println("start");
+  delay(2000);
+
+  motorL.startMove(200.0f, 100);
+  motorR.startMove(200.0f, 100);
+
+  while (!motorL.isDone() || !motorR.isDone()) {
+  }
+
+  Serial.print("L="); Serial.print(encoderL.getCount());
+  Serial.print(" R="); Serial.println(encoderR.getCount());
+  Serial.println("finished");
 }
 
 void loop() {
-  switch (STEP_PRG) {
-  case 0: {
-    StateLine_t s = Line(70);
-    if (s == LEFT_G_CROSS || s == RIGHT_G_CROSS) {
-      int SnData = ultrasonic1.read();
-      if (SnData > 10){
-        motorL.setSpeed(80);
-        delay(1000);
-        motorL.stop();
-        motorL.setSpeed(80);
-        motorR.setSpeed(80);
-        delay(1000);
-        StopMotors();
-        STEP_PRG = 1;
-      }
-      //STEP_PRG = 1;
-    }
-    break;
-  }
-  case 1:
-    StopMotors();
-    STEP_PRG = 2;
-    break;
-  }
-  // Serial.print(ultrasonic1.read());
-  // Serial.println("cm");
-  // delay(500);
 }
 
 StateLine_t Line(int speed) {
@@ -73,7 +68,7 @@ StateLine_t Line(int speed) {
     State_return = RIGHT_G_CROSS;
   }
   else {
-    State_return = LOST_LINE;    // ← оба вне линии
+    State_return = LOST_LINE;
   }
 
   int err = (sensorLdata - sensorRdata);
@@ -89,14 +84,3 @@ void StopMotors(void) {
   motorL.stop();
   motorR.stop();
 }
-
-// bool prev_in;
-// prev_in = 0;
-// bool out;
-// bool R_Ttrig(bool in) {
-//   if (!prev_in && in ) {
-//     out = true;
-//   }
-//   prev_in = in;
-//   return out;
-// };
