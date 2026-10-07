@@ -5,11 +5,17 @@
 #include "config.h"
 #include "main.h"
 
-Encoder encoderL(PIN_ENC_L_A, PIN_ENC_L_B);
-Encoder encoderR(PIN_ENC_R_A, PIN_ENC_R_B);
+config_t config;
 
-Motor motorL(PIN_IN1_L, PIN_IN2_L, PIN_EN_L, false, true,  encoderL);
-Motor motorR(PIN_IN1_R, PIN_IN2_R, PIN_EN_R, true,  false, encoderR);
+config_t& GetConfig(void){
+  return config;
+}
+
+Encoder_t encoderL(GetConfig().motor_L);
+Encoder_t encoderR(GetConfig().motor_R);
+
+Motor_t motorL(GetConfig().motor_L, encoderL);
+Motor_t motorR(GetConfig().motor_R, encoderR);
 
 LineSensor sensorL(PIN_L_SENSOR, 40, 440, 0, 100);
 LineSensor sensorR(PIN_R_SENSOR, 50, 350, 0, 100);
@@ -38,8 +44,8 @@ void setup() {
   Serial.println("start");
   delay(2000);
 
-  motorL.startMove(200.0f, 100);
-  motorR.startMove(200.0f, 100);
+  motorL.Move(200.0f, 100);
+  motorR.Move(200.0f, 100);
 
   while (!motorL.isDone() || !motorR.isDone()) {
   }
@@ -84,3 +90,40 @@ void StopMotors(void) {
   motorL.stop();
   motorR.stop();
 }
+
+void SetDefConf(void) {
+  //L motor
+  config.motor_L.pin_in1 = PIN_IN1_L;
+  config.motor_L.pin_in2 = PIN_IN2_L;
+  config.motor_L.pin_en = PIN_EN_L;
+  config.motor_L.pin_enc_a = PIN_ENC_L_A;
+  config.motor_L.pin_enc_b = PIN_ENC_L_B;
+  config.motor_L.invert = false;
+  config.motor_L.max_speed = 255;
+  config.motor_L.pid.kp = 1.0f;
+  config.motor_L.pid.ki = 0.0f;
+  config.motor_L.pid.kd = 0.0f;
+  //R motor
+  config.motor_R.pin_in1 = PIN_IN1_R;
+  config.motor_R.pin_in2 = PIN_IN2_R;
+  config.motor_R.pin_en = PIN_EN_R;
+  config.motor_R.pin_enc_a = PIN_ENC_R_A;
+  config.motor_R.pin_enc_b = PIN_ENC_R_B;
+  config.motor_R.invert = true;
+  config.motor_R.max_speed = 255;
+  config.motor_R.pid.kp = 1.0f;
+  config.motor_R.pid.ki = 0.0f;
+  config.motor_R.pid.kd = 0.0f;
+}
+
+// #define PIN_IN1_L       8
+// #define PIN_IN2_L       7
+// #define PIN_EN_L        6
+// #define PIN_ENC_L_A     2
+// #define PIN_ENC_L_B     4
+
+// #define PIN_IN1_R      10
+// #define PIN_IN2_R       9
+// #define PIN_EN_R        5
+// #define PIN_ENC_R_A     3
+// #define PIN_ENC_R_B    11

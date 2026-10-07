@@ -26,5 +26,6 @@ enum StateLine_t : uint8_t {
 
 StateLine_t Line(int speed);
 void StopMotors(void);
+void SetDefConf(void);
 
 #endif

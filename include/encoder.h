@@ -2,10 +2,11 @@
 #define ENCODER_H
 
 #include <Arduino.h>
+#include "config.h"
 
-class Encoder {
+class Encoder_t {
   public:
-    Encoder(int pinA, int pinB);
+    Encoder_t(motor_cfg_t conf);
 
     void begin();
     long getCount();
@@ -13,9 +14,8 @@ class Encoder {
     void handleInterrupt();
 
   private:
-    int _pinA;
-    int _pinB;
     volatile long _count;
+    motor_cfg_t _conf;
 };
 
 #endif

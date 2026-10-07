@@ -1,69 +1,68 @@
 #include "motor.h"
 #include "config.h"
 
-Motor::Motor(int pinIN1, int pinIN2, int pinEN,
-             bool reverse, bool invertEnc,
-             Encoder& encoder)
-  : _pinIN1(pinIN1), _pinIN2(pinIN2), _pinEN(pinEN),
-    _reverse(reverse), _invertEnc(invertEnc),
-    _encoder(encoder),
-    _posMode(false), _targetCount(0) {}
+Motor_t::Motor_t(motor_cfg_t& cfg, Encoder_t& encoder)
+  : _conf(cfg),
+    _encoder(encoder), 
+    _targetCount(0) {}
 
-void Motor::begin() {
-  pinMode(_pinIN1, OUTPUT);
-  pinMode(_pinIN2, OUTPUT);
-  pinMode(_pinEN,  OUTPUT);
+void Motor_t::begin() {
+  pinMode(_conf.pin_in1, OUTPUT);
+  pinMode(_conf.pin_in2, OUTPUT);
+  pinMode(_conf.pin_en,  OUTPUT);
 }
 
-void Motor::setSpeed(int speed) {
-  if (_reverse) {
-    speed = -speed;
-  }
-
-  int pwm = constrain(abs(speed), 0, 255);
-
-  if (speed > 0) {
-    digitalWrite(_pinIN1, LOW);
-    digitalWrite(_pinIN2, HIGH);
-  } else if (speed < 0) {
-    digitalWrite(_pinIN1, HIGH);
-    digitalWrite(_pinIN2, LOW);
-  } else {
-    digitalWrite(_pinIN1, LOW);
-    digitalWrite(_pinIN2, LOW);
-  }
-
-  analogWrite(_pinEN, pwm);
+void Motor_t::setSpeed(int speed) {
+  _speed = speed;
 }
 
-void Motor::stop() {
+void Motor_t::stop() {
   setSpeed(0);
-  _posMode = false;
 }
 
-long Motor::getEncoderNorm() {
-  long c = _encoder.getCount();
-  if (_invertEnc) c = -c;
-  return c;
-}
-
-void Motor::startMove(float mm, int speed) {
-  long start   = getEncoderNorm();
-  _targetCount = start + (long)(mm / MM_PER_IMP);
-  _posMode     = true;
-
-  setSpeed(speed);
-}
-
-bool Motor::isDone() {
-  if (!_posMode) return true;
-
-  long remaining = _targetCount - getEncoderNorm();
-
-  if (abs(remaining) < STOP_THRESHOLD_IMP) {
-    stop();
-    return true;
+void Motor_t::update(){
+  if (_conf.invert) {
+    _speed = -_speed;
   }
 
-  return false;
+  uint8_t pwm = constrain(abs(_speed), 0, _conf.max_speed);
+
+  if (_speed > 0) {
+    digitalWrite(_conf.pin_in1, LOW);
+    digitalWrite(_conf.pin_in2, HIGH);
+  } else if (_speed < 0) {
+    digitalWrite(_conf.pin_in1, HIGH);
+    digitalWrite(_conf.pin_in2, LOW);
+  } else {
+    digitalWrite(_conf.pin_in1, LOW);
+    digitalWrite(_conf.pin_in2, LOW);
+  }
+
+  analogWrite(_conf.pin_en, pwm);
 }
+
+// long Motor_t::getEncoderNorm() {
+//   long c = _encoder.getCount();
+//   if (_conf.invert) c = -c;
+//   return c;
+// }
+
+// void Motor_t::Move(float mm, int speed) {
+//   long start   = getEncoderNorm();
+//   _targetCount = start + (long)(mm / MM_PER_IMP);
+
+//   setSpeed(speed);
+// }
+
+// bool Motor_t::isDone() {
+//   if (!_posMode) return true;
+
+//   long remaining = _targetCount - getEncoderNorm();
+
+//   if (abs(remaining) < STOP_THRESHOLD_IMP) {
+//     stop();
+//     return true;
+//   }
+
+//   return false;
+// }

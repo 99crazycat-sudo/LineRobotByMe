@@ -4,32 +4,24 @@
 #include <Arduino.h>
 #include "encoder.h"
 
-class Motor {
+class Motor_t {
   public:
-    Motor(int pinIN1, int pinIN2, int pinEN,
-          bool reverse, bool invertEnc,
-          Encoder& encoder);
+    Motor_t(motor_cfg_t& cfg, Encoder_t& encoder);
 
-    void begin();
-    void setSpeed(int speed);
-    void stop();
+    void begin(); //Инициализация пинов
+    void setSpeed(int speed); //Установка скорости
+    void stop(); //Остановка 
 
-    long getEncoderNorm();
-
-    void startMove(float mm, int speed);
-    bool isDone();
+    // long getEncoderNorm();
+    void update();
+    // void Move(float mm, int speed);
+    // bool isDone();
 
   private:
-    int  _pinIN1;
-    int  _pinIN2;
-    int  _pinEN;
-    bool _reverse;
-    bool _invertEnc;
-
-    Encoder& _encoder;
-
-    bool _posMode;
+    int _speed;
     long _targetCount;
+    Encoder_t& _encoder;
+    motor_cfg_t& _conf;
 };
 
 #endif
